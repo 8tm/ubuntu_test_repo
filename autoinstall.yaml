@@ -1,0 +1,134 @@
+#cloud-config
+autoinstall:
+  version: 3
+
+  identity:
+    hostname: jarek-pc
+    username: Jarek
+    password: "$6$rounds=4096$uZKcH4n79YxQgfgt$7nxSCP2ceZrB56ZbdZVjDWLGUy5zv3a3rL29lPN3FuM2oZlYqzYOnrDRppBC1kD7jYI1RfPb28Pb3ltqDgeKR0"
+    # Hasło: Jarek1234
+
+  locale: pl_PL.UTF-8
+  keyboard:
+    layout: pl
+    variant: ''
+
+  timezone: Europe/Warsaw
+
+  apt:
+    preserve_sources_list: false
+    primary:
+      - arches: [default]
+        uri: http://archive.ubuntu.com/ubuntu
+
+  user-data:
+    disable_root: false
+    users:
+      - name: Jarek
+        groups: [sudo, dialout]
+        shell: /bin/bash
+
+    write_files:
+      - path: /home/Jarek/first-login.sh
+        permissions: '0755'
+        owner: Jarek:Jarek
+        content: |
+          #!/bin/bash
+          echo "Witaj Jarek! Skrypt pierwszego logowania działa!"
+          # Możesz dodać tu inne komendy: aktualizacje, konfiguracja itp.
+
+    runcmd:
+      - echo '/home/Jarek/first-login.sh' >> /home/Jarek/.bashrc
+
+  ssh:
+    install-server: true
+    allow-pw: true
+
+  network:
+    version: 2
+    wifis:
+      wlan0:
+        dhcp4: true
+        access-points:
+          "MyWifiNetwork":
+            password: "MyWiFiNetwoirk1234"
+
+  storage:
+    layout:
+      name: lvm
+    swap:
+      size: 2048
+    config:
+      - type: disk
+        id: disk0
+        match:
+          size: largest
+        ptable: gpt
+        wipe: superblock-recursive
+      - type: partition
+        id: root-part
+        device: disk0
+        size: 100%
+        flag: boot
+      - type: luks
+        id: luks_root
+        device: root-part
+        key: "password"
+      - type: lvm_volgroup
+        id: vg0
+        devices: [luks_root]
+      - type: lvm_logical_volume
+        id: lv_root
+        name: root
+        volgroup: vg0
+        size: 20G
+      - type: lvm_logical_volume
+        id: lv_home
+        name: home
+        volgroup: vg0
+        size: 100%
+      - type: format
+        id: format_root
+        volume: lv_root
+        fstype: ext4
+      - type: format
+        id: format_home
+        volume: lv_home
+        fstype: ext4
+      - type: mount
+        path: /
+        device: format_root
+      - type: mount
+        path: /home
+        device: format_home
+
+  packages:
+    - mc
+    - terminator
+    - ansible
+    - smplayer
+    - gedit
+    - arduino
+    - fritzing
+    - caja
+    - qbittorrent
+    - gimp
+    - freecad
+    - sqlitebrowser
+    - system-config-printer
+    - printer-driver-postscript-hp
+    - hplip
+    - nvidia-driver-535
+    - flatpak
+    - gnome-software-plugin-flatpak
+    - appimagelauncher
+
+  late-commands:
+    - curtin in-target -- apt-get update
+    - curtin in-target -- apt-get install -y snapd
+    - curtin in-target -- snap install pycharm-community --classic || true
+    - curtin in-target -- snap install prusaslicer || true
+    - curtin in-target -- snap install code --classic || true
+    - curtin in-target -- snap refresh || true
+    - curtin in-target -- ubuntu-drivers autoinstall || true
+    - curtin in-target -- flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
