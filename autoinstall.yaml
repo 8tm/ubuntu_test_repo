@@ -6,7 +6,6 @@ autoinstall:
     hostname: jarek-pc
     username: Jarek
     password: "$6$rounds=4096$uZKcH4n79YxQgfgt$7nxSCP2ceZrB56ZbdZVjDWLGUy5zv3a3rL29lPN3FuM2oZlYqzYOnrDRppBC1kD7jYI1RfPb28Pb3ltqDgeKR0"
-    # Hasło: Jarek1234
 
   locale: pl_PL.UTF-8
   keyboard:
@@ -16,29 +15,10 @@ autoinstall:
   timezone: Europe/Warsaw
 
   apt:
-    preserve_sources_list: false
+    preserve_sources_list: true
     primary:
       - arches: [default]
         uri: http://archive.ubuntu.com/ubuntu
-
-  user-data:
-    disable_root: false
-    users:
-      - name: Jarek
-        groups: [sudo, dialout]
-        shell: /bin/bash
-
-    write_files:
-      - path: /home/Jarek/first-login.sh
-        permissions: '0755'
-        owner: Jarek:Jarek
-        content: |
-          #!/bin/bash
-          echo "Witaj Jarek! Skrypt pierwszego logowania działa!"
-          # Możesz dodać tu inne komendy: aktualizacje, konfiguracja itp.
-
-    runcmd:
-      - echo '/home/Jarek/first-login.sh' >> /home/Jarek/.bashrc
 
   ssh:
     install-server: true
